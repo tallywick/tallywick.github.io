@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="canonical" href="https://tallywick.github.io/">
+<meta property="og:title" content="Fee and profit calculator for Etsy sellers | Tallywick">
+<meta property="og:description" content="See every Etsy fee on an order, what you keep, and the lowest price that still pays you. Free, by country.">
+<meta property="og:url" content="https://tallywick.github.io/">
+<meta property="og:type" content="website">
+<title>Fee Calculator for Etsy Sellers — Fees by Country, Profit &amp; Floor Price | Tallywick</title>
+<meta name="description" content="Free fee and profit calculator for Etsy sellers. Enter your price, shipping, discount and shop country to see transaction, payment processing, listing and offsite ads fees, your net profit, margin and the lowest price that still pays you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+
+/* Layout: a ledger sheet — yellow input cells on the left, the computed "what you keep" column on the right, stacking to one column on phones. */
+:root{
+  --bg:#f5f7fb;
+  --paper:#ffffff;
+  --ink:#16233a;
+  --muted:#5b6880;
+  --line:#d7deea;
+  --navy:#213a63;
+  --navy-ink:#ffffff;
+  --cell:#fff4c7;
+  --cell-line:#e9d27a;
+  --calc:#eef2f8;
+  --good:#1f7a4d;
+  --bad:#b3362c;
+  --font-display:"Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-num:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1624; --paper:#162033; --ink:#e7ecf5; --muted:#9aa7bd; --line:#2a3852;
+    --navy:#2c4a7d; --navy-ink:#ffffff; --cell:#3a3418; --cell-line:#6b5d22; --calc:#1c2940;
+    --good:#5cc38f; --bad:#ef7d72; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1624; --paper:#162033; --ink:#e7ecf5; --muted:#9aa7bd; --line:#2a3852;
+  --navy:#2c4a7d; --navy-ink:#ffffff; --cell:#3a3418; --cell-line:#6b5d22; --calc:#1c2940;
+  --good:#5cc38f; --bad:#ef7d72; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.band{background:var(--navy);color:var(--navy-ink)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header .wrap{padding-block:36px 30px;display:grid;gap:10px}
+.brand{font-family:var(--font-num);font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5vw,44px);line-height:1.08;margin:0;text-wrap:balance}
+.lede{margin:0;max-width:62ch;opacity:.9}
+main .wrap{padding-block:24px 48px;display:grid;gap:20px}
+.sheet{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;align-items:start}
+@media (max-width:820px){.sheet{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.panel h2{font-family:var(--font-display);font-size:18px;margin:0}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:460px){.grid2{grid-template-columns:minmax(0,1fr)}}
+label{display:grid;gap:4px;font-size:13px;font-weight:500;color:var(--muted)}
+input[type=number],select{font-family:var(--font-num);font-size:16px;color:var(--ink);background:var(--cell);border:1px solid var(--cell-line);border-radius:6px;padding:9px 10px;width:100%;font-variant-numeric:tabular-nums}
+select{background:var(--paper);border-color:var(--line);font-family:var(--font-body);font-size:15px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:var(--ink);font-size:14px}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:var(--navy)}
+fieldset{border:1px solid var(--line);border-radius:8px;padding:12px;margin:0;display:grid;gap:10px;min-width:0}
+legend{font-size:12px;font-family:var(--font-num);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.keep{display:grid;gap:4px;background:var(--calc);border-radius:8px;padding:14px}
+.keep .lab{font-size:12px;font-family:var(--font-num);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.keep .big{font-family:var(--font-num);font-size:clamp(30px,6vw,40px);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.keep .sub{font-size:14px;color:var(--muted)}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:600;border-bottom:none;border-top:2px solid var(--ink)}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.floor{display:grid;gap:10px}
+.floor .row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.floor .row label{flex:1 1 160px}
+.floor output{font-family:var(--font-num);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.cta{background:var(--navy);color:var(--navy-ink);border-radius:10px;padding:20px;display:grid;gap:10px}
+.cta h2{font-family:var(--font-display);margin:0;font-size:20px}
+.cta p{margin:0;max-width:64ch;opacity:.92}
+.cta .links{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-block;background:var(--navy-ink);color:#213a63;text-decoration:none;font-weight:600;padding:10px 14px;border-radius:6px}
+.btn.ghost{background:transparent;color:var(--navy-ink);border:1px solid rgba(255,255,255,.6)}
+.notes{color:var(--muted);font-size:13px;display:grid;gap:6px;max-width:80ch}
+.notes p{margin:0}
+.notes a{color:inherit}
+@media (prefers-reduced-motion:no-preference){.bar span{transition:width .25s ease}}
+</style>
+</head>
+<body>
+
+
+<header class="band">
+  <div class="wrap">
+    <div class="brand">Tallywick · free tool</div>
+    <h1>Fee and profit calculator for Etsy sellers</h1>
+    <p class="lede">Type your price in the yellow cells. See every Etsy fee on the order, what you keep, and the lowest price that still pays you. Fees differ by shop country, so pick yours.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="sheet">
+      <section class="panel" aria-labelledby="in-h">
+        <h2 id="in-h">Your order</h2>
+        <div class="grid2">
+          <label for="price">Item price
+            <input id="price" type="number" min="0" step="0.01" value="12.99" inputmode="decimal"></label>
+          <label for="qty">Quantity
+            <input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+          <label for="ship">Shipping you charge
+            <input id="ship" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+          <label for="disc">Discount (%)
+            <input id="disc" type="number" min="0" max="100" step="1" value="0" inputmode="decimal"></label>
+          <label for="cost">Your cost per item
+            <input id="cost" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+          <label for="shipcost">Your shipping cost
+            <input id="shipcost" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+        </div>
+
+        <fieldset>
+          <legend>Shop country</legend>
+          <label for="country">Where your shop is based
+            <select id="country">
+              <option value="us">United States (3% + 0.25)</option>
+              <option value="uk">United Kingdom (4% + 0.20)</option>
+              <option value="kr">South Korea (6.5% + 0.30)</option>
+              <option value="custom">Other — enter my rate</option>
+            </select></label>
+          <div class="grid2">
+            <label for="ppct">Payment processing (%)
+              <input id="ppct" type="number" min="0" step="0.1" value="3" inputmode="decimal"></label>
+            <label for="pfix">Processing fixed fee
+              <input id="pfix" type="number" min="0" step="0.01" value="0.25" inputmode="decimal"></label>
+            <label for="reg">Regulatory or other fee (%)
+              <input id="reg" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+            <label for="tx">Transaction fee (%)
+              <input id="tx" type="number" min="0" step="0.1" value="6.5" inputmode="decimal"></label>
+          </div>
+          <p class="hint">Rates differ by country and change over time. Check Etsy's fee page for your country and edit any yellow cell.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Extras</legend>
+          <label class="check" for="listing"><input id="listing" type="checkbox" checked> Listing fee 0.20 per item sold (auto-renew)</label>
+          <label class="check" for="fx"><input id="fx" type="checkbox"> Currency conversion 2.5% (listing currency differs from your bank's)</label>
+          <label class="check" for="ads"><input id="ads" type="checkbox"> Sale came from Offsite Ads</label>
+          <label class="check" for="ads12"><input id="ads12" type="checkbox"> My shop made 10,000+ in the past 12 months (Offsite Ads 12%)</label>
+        </fieldset>
+      </section>
+
+      <section class="panel" aria-labelledby="out-h" aria-live="polite">
+        <h2 id="out-h">What you keep</h2>
+        <div class="keep">
+          <span class="lab">Net profit on this order</span>
+          <span class="big" id="net">—</span>
+          <span class="sub" id="netsub">—</span>
+        </div>
+        <div class="bar" role="img" id="bar" aria-label="Order total split into fees, your costs and profit">
+          <span id="b-fee" style="background:#b3362c;width:0"></span>
+          <span id="b-cost" style="background:#c9a227;width:0"></span>
+          <span id="b-keep" style="background:#1f7a4d;width:0"></span>
+        </div>
+        <div class="legend"><span><i style="background:#b3362c"></i>Etsy fees</span><span><i style="background:#c9a227"></i>Your costs</span><span><i style="background:#1f7a4d"></i>You keep</span></div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Line</th><th class="n">Amount</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="floor">
+          <h2>Lowest price that still pays you</h2>
+          <div class="row">
+            <label for="target">Profit you want per item
+              <input id="target" type="number" min="0" step="0.5" value="5" inputmode="decimal"></label>
+            <div><div class="hint">Set the item price to at least</div><output id="floor" for="target">—</output></div>
+          </div>
+          <p class="hint">Uses your current shipping, discount, country and extras. Handy before a sale or Cyber Week discount.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="cta" aria-labelledby="cta-h">
+      <h2 id="cta-h">One order is easy. A whole month is where it gets messy.</h2>
+      <p>The Tallywick profit ledger is a Google Sheets template that does this math for every order and adds it up by month and by channel: Etsy, Gumroad, Lemon Squeezy and your own site. Log each order once, or paste your sales file. One-time purchase.</p>
+      <div class="links">
+        <a class="btn" href="https://tallywick.etsy.com/listing/4601721564?utm_source=feecalc&amp;utm_medium=tool" target="_blank" rel="noopener">See it on Etsy</a>
+        <a class="btn ghost" href="https://tallywick.gumroad.com/l/poagtg?utm_source=feecalc" target="_blank" rel="noopener">Get it on Gumroad</a>
+      </div>
+    </section>
+
+    <section class="notes" aria-label="About these numbers">
+      <p><strong>How it counts.</strong> Transaction fee and payment processing are charged on the item total plus shipping, after the discount. Offsite Ads (15%, or 12% for larger shops) is capped at 100 per order. The listing fee is 0.20 for each item sold when the listing auto-renews. Sales tax and VAT that Etsy collects are left out.</p>
+      <p><strong>Rates checked November 2026</strong> against Etsy's published fee pages. Etsy changes fees and some countries add a regulatory operating fee, so confirm yours on <a href="https://www.etsy.com/legal/fees" target="_blank" rel="noopener">Etsy's fees and payments policy</a> and edit the yellow cells.</p>
+      <p>Tallywick is not affiliated with or endorsed by Etsy, Inc. "Etsy" is a trademark of Etsy, Inc., used here only to describe what the calculator is for. This is an estimate for planning, not tax or accounting advice. Made with AI tools and checked by our shop.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const presets = { us:[3,0.25], uk:[4,0.20], kr:[6.5,0.30] };
+  const num = id => { const v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; };
+  const money = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+
+  function compute(price){
+    const qty = Math.max(1, Math.round(num("qty")));
+    const disc = Math.min(100, num("disc")) / 100;
+    const ship = num("ship");
+    const itemTotal = price * qty * (1 - disc);
+    const orderTotal = itemTotal + ship;
+    const tx = orderTotal * num("tx") / 100;
+    const proc = orderTotal * num("ppct") / 100 + (orderTotal > 0 ? num("pfix") : 0);
+    const reg = orderTotal * num("reg") / 100;
+    const listing = $("listing").checked ? 0.20 * qty : 0;
+    const fx = $("fx").checked ? orderTotal * 0.025 : 0;
+    const ads = $("ads").checked ? Math.min(100, orderTotal * ($("ads12").checked ? 0.12 : 0.15)) : 0;
+    const fees = tx + proc + reg + listing + fx + ads;
+    const costs = num("cost") * qty + num("shipcost");
+    const net = orderTotal - fees - costs;
+    return {qty, orderTotal, tx, proc, reg, listing, fx, ads, fees, costs, net};
+  }
+
+  function floorPrice(){
+    const want = num("target") * Math.max(1, Math.round(num("qty")));
+    let lo = 0, hi = 100000;
+    if (compute(hi).net < want) return null;
+    for (let i = 0; i < 60; i++){ const mid = (lo + hi) / 2; if (compute(mid).net >= want) hi = mid; else lo = mid; }
+    return Math.ceil(hi * 100) / 100;
+  }
+
+  function render(){
+    const r = compute(num("price"));
+    const rows = [
+      ["Order total (after discount)", r.orderTotal, false],
+      ["Transaction fee", -r.tx, true],
+      ["Payment processing", -r.proc, true],
+      ["Regulatory or other fee", -r.reg, r.reg > 0],
+      ["Listing fee", -r.listing, r.listing > 0],
+      ["Currency conversion", -r.fx, r.fx > 0],
+      ["Offsite Ads", -r.ads, r.ads > 0],
+      ["Your costs", -r.costs, r.costs > 0]
+    ];
+    $("rows").innerHTML = rows.filter(x => x[2] || x[0].startsWith("Order")).map(x =>
+      `<tr><td>${x[0]}</td><td class="n">${money(x[1])}</td></tr>`).join("") +
+      `<tr class="total"><td>Net profit</td><td class="n">${money(r.net)}</td></tr>`;
+    const netEl = $("net");
+    netEl.textContent = money(r.net);
+    netEl.className = "big " + (r.net >= 0 ? "pos" : "neg");
+    const margin = r.orderTotal > 0 ? r.net / r.orderTotal * 100 : 0;
+    const feeShare = r.orderTotal > 0 ? r.fees / r.orderTotal * 100 : 0;
+    $("netsub").textContent = r.orderTotal > 0
+      ? `${margin.toFixed(1)}% margin · Etsy fees ${money(r.fees)} (${feeShare.toFixed(1)}% of the order)`
+      : "Enter a price to see your fees.";
+    const base = Math.max(r.orderTotal, r.fees + r.costs, 0.0001);
+    $("b-fee").style.width = (r.fees / base * 100) + "%";
+    $("b-cost").style.width = (r.costs / base * 100) + "%";
+    $("b-keep").style.width = (Math.max(0, r.net) / base * 100) + "%";
+    const f = floorPrice();
+    $("floor").textContent = f === null ? "not reachable" : money(f);
+  }
+
+  $("country").addEventListener("change", e => {
+    const p = presets[e.target.value];
+    if (p){ $("ppct").value = p[0]; $("pfix").value = p[1].toFixed(2); }
+    else { $("ppct").focus(); }
+    render();
+  });
+  ["ppct","pfix"].forEach(id => $(id).addEventListener("input", () => { $("country").value = "custom"; }));
+  document.querySelectorAll("input").forEach(el => el.addEventListener("input", render));
+  render();
+})();
+</script>
+
+</body>
+</html>
